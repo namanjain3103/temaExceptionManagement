@@ -28,27 +28,49 @@ public class ExceptionListController {
 	 @Autowired
 	  RestTemplate restTemplate;
 	    
-		@GetMapping("/get")
-		public ResponseEntity<?>  getAllFromSource(){
-			
-			List<SourceMongoEntity> mongoData = exceptionMigrationService. getAllFromSource();	
-			if(mongoData.size()>0) {
-				return new ResponseEntity<List<SourceMongoEntity>>(mongoData, HttpStatus.OK);
-			}
-			else 
-				return new ResponseEntity<>("data not available", HttpStatus.NOT_FOUND);
+	 
+	 @GetMapping("/get")
+	 public ResponseEntity<?> getAllFromSource() {
+	     try {
+	         List<SourceMongoEntity> mongoData = exceptionMigrationService.getAllFromSource();
+	         if (mongoData.size() > 0) {
+	             return new ResponseEntity<List<SourceMongoEntity>>(mongoData, HttpStatus.OK);
+	         } else {
+	             return new ResponseEntity<>("Data not available", HttpStatus.NOT_FOUND);
+	         }
+	     } catch (Exception e) {
+	         e.printStackTrace(); // You can log the exception or handle it as needed
+	         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	             .body("An error occurred while retrieving data from the source: " + e.getMessage());
+	     }
+	 }
+		
+		@GetMapping("/getTema")
+		public ResponseEntity<?> getAllFromTema() {
+		    try {
+		        List<SourceMongoEntity> mongoData = exceptionMigrationService.getAllFromTema();
+		        if (mongoData.size() > 0) {
+		            return new ResponseEntity<List<SourceMongoEntity>>(mongoData, HttpStatus.OK);
+		        } else {
+		            return new ResponseEntity<>("Data not available", HttpStatus.NOT_FOUND);
+		        }
+		    } catch (Exception e) {
+		        e.printStackTrace(); // You can log the exception or handle it as needed
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+		            .body("An error occurred while retrieving data from Tema: " + e.getMessage());
+		    }
 		}
 		
 		@PostMapping("/create")
-		public ResponseEntity<?> create(@RequestBody SourceMongoEntity mongoData){
-			try {
-				exceptionMigrationService.addExceptionInSource(mongoData);	
-				return new ResponseEntity<SourceMongoEntity>(mongoData, HttpStatus.OK);
-			} catch (Exception e) {
-				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-			}				
+		public ResponseEntity<?> create(@RequestBody SourceMongoEntity mongoData) {
+		    try {
+		        SourceMongoEntity createdData = exceptionMigrationService.addExceptionInSource(mongoData);
+		        return ResponseEntity.ok(createdData);
+		    } catch (Exception e) {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+		            .body("Failed to create data: " + e.getMessage());
+		    }
 		}
-		
 		
 //		@PostMapping("/assign")
 //		public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup){
@@ -62,13 +84,13 @@ public class ExceptionListController {
 		
 		
 		// assigning user group to exception
-		@PostMapping("/assign")
+		@PostMapping("/assignGroup")
 		public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup) {
 		    try {
 		        String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
 		        String assignGroupJson = exceptionMigrationService.toJson(assignGroup);
 		        ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, assignGroupJson, String.class);
-
+		        
 		        if (response.getStatusCode().is2xxSuccessful()) {
 		            System.out.println(assignGroupJson);
 		            return ResponseEntity.ok("Data sent to Spring Boot and external API successfully");
@@ -83,5 +105,17 @@ public class ExceptionListController {
 		            .body("Error occurred while processing the request");
 		    }
 		}
-
+		
+		@PostMapping("/migrate")
+		public ResponseEntity<String> migrate() {
+		    try {
+		        exceptionMigrationService.migrateData();
+		        return ResponseEntity.ok("Data migration completed successfully.");
+		    } catch (Exception e) {
+		        e.printStackTrace(); // You can log the exception or handle it as needed
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+		            .body("An error occurred during data migration: " + e.getMessage());
+		    }
+		}
+		    
 }

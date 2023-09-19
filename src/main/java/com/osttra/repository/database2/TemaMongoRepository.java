@@ -1,4 +1,5 @@
-package com.osttra.repository;
+package com.osttra.repository.database2;
+
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -6,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import com.osttra.entity.SourceMongoEntity;
 
 @Repository
-public interface SourceMongoRepository extends MongoRepository<SourceMongoEntity, String> {
+public interface TemaMongoRepository extends MongoRepository<SourceMongoEntity, String> {
 
 }
