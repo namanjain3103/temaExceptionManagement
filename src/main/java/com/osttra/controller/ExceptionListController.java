@@ -117,5 +117,5 @@ public class ExceptionListController {
 		            .body("An error occurred during data migration: " + e.getMessage());
 		    }
 		}
-		    
+						    
 }

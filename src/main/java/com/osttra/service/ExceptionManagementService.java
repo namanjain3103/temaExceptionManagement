@@ -41,12 +41,14 @@ public class ExceptionManagementService {
     
     
     public void migrateData() {
-        // Step 1: Fetch data from the source (Database 1)
         List<SourceMongoEntity> dataToMigrate = sourceMongoRepository.findAll();
-        temaMongoRepository.saveAll(dataToMigrate);
+        for (SourceMongoEntity mongoData : dataToMigrate) {
+        	 if (!temaMongoRepository.existsById(mongoData.getExceptionId())) {
+        temaMongoRepository.save(mongoData);
+        }
+        }
     }
-    
-    
+       
 	public String toJson(Map<String, String> assignGroup) {
 	      try {
 	            ObjectMapper objectMapper = new ObjectMapper();

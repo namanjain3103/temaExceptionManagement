@@ -20,5 +20,6 @@ public class Database1Config {
 	 @Bean(name = "mongoTemplate1")
 	    public MongoTemplate mongoTemplate1() {
 	        return new MongoTemplate(MongoClients.create("mongodb://localhost:27017/mongo-exception-api"), "mongo-exception-api");
+	       // return new MongoTemplate(MongoClients.create("mongodb+srv://admin:admin@cluster0.zucrbvv.mongodb.net/?retryWrites=true&w=majority"), "mongo-exception-api");
 	    }	
 }
