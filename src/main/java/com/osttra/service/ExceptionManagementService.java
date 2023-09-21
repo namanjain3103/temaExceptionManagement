@@ -2,6 +2,7 @@ package com.osttra.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -117,5 +118,14 @@ public class ExceptionManagementService {
 			return null;
 		}
 	}
+
+	   public Optional<TemaMongoEntity> getExceptionDetails(String exceptionId) {
+	        try {
+	            return temaMongoRepository.findById(exceptionId);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            return Optional.empty();
+	        }
+	    }
 
 }

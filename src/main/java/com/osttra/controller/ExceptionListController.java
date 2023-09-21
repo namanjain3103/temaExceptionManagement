@@ -2,19 +2,19 @@ package com.osttra.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
-import com.osttra.entity.SourceMongoEntity;
 import com.osttra.entity.TemaMongoEntity;
 import com.osttra.service.ExceptionManagementService;
 
@@ -35,7 +35,7 @@ public class ExceptionListController {
 
 	
 	@GetMapping("/getTema")
-	public ResponseEntity<?> getAllFromTema() {
+	public ResponseEntity<?> getAllExceptionList() {
 		try {
 			List<TemaMongoEntity> mongoData = exceptionMigrationService.getAllFromTema();
 			if (mongoData.size() > 0) {
@@ -124,6 +124,24 @@ public class ExceptionListController {
 		}
 	}
 
+    @GetMapping("get/{exceptionId}")
+    public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
+        try {
+            Optional<TemaMongoEntity> exceptionDetails = exceptionMigrationService.getExceptionDetails(exceptionId);
+
+            if (exceptionDetails.isPresent()) {
+                return ResponseEntity.ok(exceptionDetails.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+}
+
+	
+	
 //		@PostMapping("/assignGroup")
 //		public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup) {
 //		    try {
@@ -157,9 +175,4 @@ public class ExceptionListController {
 //		            .body("Error occurred while processing the request");
 //		    }
 //		}
-	
 
-	
-	
-	
-}
