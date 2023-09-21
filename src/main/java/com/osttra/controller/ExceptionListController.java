@@ -95,10 +95,12 @@ public class ExceptionListController {
 	@PostMapping("/assignGroup")
 	public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup) {
 		try {
-			// String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
+			
 			String exceptionId = assignGroup.get("exceptionId");
-			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/claim";
-
+			assignGroup.put("type", "candidate");
+			assignGroup.remove("exceptionId");
+			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/identity-links";
+			//String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
 			String assignGroupJson = exceptionMigrationService.MaptoJson(assignGroup);
 			System.out.println("in assignGroup Controller");
 
@@ -123,6 +125,38 @@ public class ExceptionListController {
 					.body("Error occurred while processing the request");
 		}
 	}
+	
+	@PostMapping("/assignUser")
+	public ResponseEntity<?> assignUser(@RequestBody Map<String, String> assignUser) {
+		try {
+			// String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
+			String exceptionId = assignUser.get("exceptionId");
+			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/claim";
+			String assignUserJson = exceptionMigrationService.MaptoJson(assignUser);
+			System.out.println("in userGroup Controller");
+
+			HttpHeaders headers = new org.springframework.http.HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<String> requestEntity = new HttpEntity<>(assignUserJson, headers);
+
+			ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, requestEntity, String.class);
+			if (response.getStatusCode().is2xxSuccessful()) {
+				System.out.println(assignUserJson);
+				return ResponseEntity.ok("Data sent to Spring Boot and external API successfully");
+			} else {
+				System.out.println("inside assignGroup Controller If condition");
+
+				return ResponseEntity.status(response.getStatusCode())
+						.body("External API returned an error: " + response.getBody());
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("Error occurred while processing the request");
+		}
+	}
+	
 
     @GetMapping("get/{exceptionId}")
     public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
