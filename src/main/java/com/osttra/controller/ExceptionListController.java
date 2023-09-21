@@ -97,7 +97,7 @@ public class ExceptionListController {
 		try {
 			// String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
 			String exceptionId = assignGroup.get("exceptionId");
-			String externalApiUrl = "http://192.168.18.20:8080/engine-rest/task/" + exceptionId + "/claim";
+			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/claim";
 
 			String assignGroupJson = exceptionMigrationService.MaptoJson(assignGroup);
 			System.out.println("in assignGroup Controller");
