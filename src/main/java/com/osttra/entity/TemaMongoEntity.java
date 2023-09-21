@@ -16,7 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Document(collection="mongodata")
 public class TemaMongoEntity {
-
 	   @Id
 	    private String exceptionId;
 	    private String tradeId;
@@ -31,5 +30,6 @@ public class TemaMongoEntity {
 	    private String createdAt;
 	    private String updatedBy;
 	    private String updatedAt;
-	    private String action = "ASSIGN";
+	    private String assign = "ASSIGN";
+	
 }
