@@ -7,5 +7,6 @@ import com.osttra.entity.TemaMongoEntity;
 
 @Repository
 public interface TemaMongoRepository extends MongoRepository<TemaMongoEntity, String> {
-	  TemaMongoEntity findByExceptionId(String exceptionId);
+	  
+
 }

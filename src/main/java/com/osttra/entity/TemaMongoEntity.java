@@ -9,11 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Document(collection="mongodata")
 public class TemaMongoEntity {
 	   @Id
@@ -22,7 +24,7 @@ public class TemaMongoEntity {
 	    private String counterParty;
 	    private String tradeDate;
 	    private String exceptionType;
-	    private List<SourceResolutionSteps> resolutionSteps;
+	    private List<String> resolutionSteps;
 	    private String status;
 	    private String priority;
 	    private String description;
@@ -31,5 +33,6 @@ public class TemaMongoEntity {
 	    private String updatedBy;
 	    private String updatedAt;
 	    private String assign = "ASSIGN";
+	    private String processId;
 	
 }

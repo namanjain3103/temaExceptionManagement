@@ -28,16 +28,16 @@ import org.springframework.http.MediaType;
 public class ExceptionListController {
 
 	@Autowired
-	ExceptionManagementService exceptionMigrationService;
+	ExceptionManagementService exceptionManagementService;
 
 	@Autowired
 	RestTemplate restTemplate;
 
 	
-	@GetMapping("/getTema")
+	@GetMapping("/getAllException")
 	public ResponseEntity<?> getAllExceptionList() {
 		try {
-			List<TemaMongoEntity> mongoData = exceptionMigrationService.getAllFromTema();
+			List<TemaMongoEntity> mongoData = exceptionManagementService.showAllException();
 			if (mongoData.size() > 0) {
 				return new ResponseEntity<List<TemaMongoEntity>>(mongoData, HttpStatus.OK);
 			} else {
@@ -101,14 +101,16 @@ public class ExceptionListController {
 			assignGroup.remove("exceptionId");
 			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/identity-links";
 			//String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
-			String assignGroupJson = exceptionMigrationService.MaptoJson(assignGroup);
+			String assignGroupJson = exceptionManagementService.mapToJson(assignGroup);
 			System.out.println("in assignGroup Controller");
 
-			HttpHeaders headers = new org.springframework.http.HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<String> requestEntity = new HttpEntity<>(assignGroupJson, headers);
-
-			ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, requestEntity, String.class);
+//			HttpHeaders headers = new org.springframework.http.HttpHeaders();
+//			headers.setContentType(MediaType.APPLICATION_JSON);
+//			HttpEntity<String> requestEntity = new HttpEntity<>(assignGroupJson, headers);
+//          ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, requestEntity, String.class);
+		
+			ResponseEntity<String> response = exceptionManagementService.postJsonToExternalApi(externalApiUrl, assignGroupJson);
+			
 			if (response.getStatusCode().is2xxSuccessful()) {
 				System.out.println(assignGroupJson);
 				return ResponseEntity.ok("Data sent to Spring Boot and external API successfully");
@@ -132,14 +134,16 @@ public class ExceptionListController {
 			// String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
 			String exceptionId = assignUser.get("exceptionId");
 			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/claim";
-			String assignUserJson = exceptionMigrationService.MaptoJson(assignUser);
+			String assignUserJson = exceptionManagementService.mapToJson(assignUser);
 			System.out.println("in userGroup Controller");
 
-			HttpHeaders headers = new org.springframework.http.HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<String> requestEntity = new HttpEntity<>(assignUserJson, headers);
-
-			ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, requestEntity, String.class);
+//			HttpHeaders headers = new org.springframework.http.HttpHeaders();
+//			headers.setContentType(MediaType.APPLICATION_JSON);
+//			HttpEntity<String> requestEntity = new HttpEntity<>(assignUserJson, headers);
+//			ResponseEntity<String> response = restTemplate.postForEntity(externalApiUrl, requestEntity, String.class);
+			
+			ResponseEntity<String> response = exceptionManagementService.postJsonToExternalApi(externalApiUrl, assignUserJson);
+			
 			if (response.getStatusCode().is2xxSuccessful()) {
 				System.out.println(assignUserJson);
 				return ResponseEntity.ok("Data sent to Spring Boot and external API successfully");
@@ -158,13 +162,27 @@ public class ExceptionListController {
 	}
 	
 
-    @GetMapping("get/{exceptionId}")
+
+//    public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
+//        try {
+//            Optional<TemaMongoEntity> exceptionDetails = exceptionManagementService.getExceptionDetails(exceptionId);
+//
+//            if (exceptionDetails.isPresent()) {
+//                return ResponseEntity.ok(exceptionDetails.get());
+//            } else {
+//                return ResponseEntity.notFound().build();
+//            }
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//    }
+    @GetMapping("/get/{exceptionId}")
     public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
         try {
-            Optional<TemaMongoEntity> exceptionDetails = exceptionMigrationService.getExceptionDetails(exceptionId);
-
-            if (exceptionDetails.isPresent()) {
-                return ResponseEntity.ok(exceptionDetails.get());
+        	System.out.println(" inside get exception details"+ exceptionId);
+            TemaMongoEntity exceptionDetails = exceptionManagementService.getExceptionDetails(exceptionId);
+            if (exceptionDetails != null) {
+                return ResponseEntity.ok(exceptionDetails);
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -172,10 +190,11 @@ public class ExceptionListController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+
 }
 
-	
-	
 //		@PostMapping("/assignGroup")
 //		public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup) {
 //		    try {
