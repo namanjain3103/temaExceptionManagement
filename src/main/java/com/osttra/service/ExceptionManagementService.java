@@ -136,28 +136,29 @@ public class ExceptionManagementService {
 
 	public void migrateData() {
 		List<SourceMongoEntity> sourceData = sourceMongoRepository.findAll();
-        System.out.println(sourceData);
-		
+		System.out.println(sourceData);
+
 		for (SourceMongoEntity sourceEntity : sourceData) {
 			System.out.println(sourceEntity);
-			
+
 			System.out.println(sourceEntity.getExceptionId());
-			
-			//TemaMongoEntity existingEntity = temaMongoRepository.findById(sourceEntity.getExceptionId()).get();
-			
-			
-			Optional<TemaMongoEntity> existingEntityOptional = temaMongoRepository.findById(sourceEntity.getExceptionId());
+
+			// TemaMongoEntity existingEntity =
+			// temaMongoRepository.findById(sourceEntity.getExceptionId()).get();
+
+			Optional<TemaMongoEntity> existingEntityOptional = temaMongoRepository
+					.findById(sourceEntity.getExceptionId());
 			if (!existingEntityOptional.isPresent()) {
 				TemaMongoEntity temaExceptionEntity = createTemaExceptionEntity(sourceEntity);
-				String exceptionId  = temaExceptionEntity.getExceptionId();
+				String exceptionId = temaExceptionEntity.getExceptionId();
 				String exceptionType = temaExceptionEntity.getExceptionType();
-				System.out.println(exceptionId +" "+ exceptionType);
+				System.out.println(exceptionId + " " + exceptionType);
 				String processId = fetchProcessId(exceptionId, exceptionType);
 				System.out.println(processId);
 				temaExceptionEntity.setProcessId(processId);
 				temaMongoRepository.save(temaExceptionEntity);
 			} else {
-			    System.out.println(" data already present");
+				System.out.println(" data already present");
 			}
 
 //			if (existingEntity == null) {
@@ -194,21 +195,21 @@ public class ExceptionManagementService {
 
 	public String fetchProcessId(String exceptionId, String exceptionType) {
 
-		//Map<String, String> mapExceptionId = Collections.singletonMap("businessKey", exceptionId);
-		
-		
+		// Map<String, String> mapExceptionId = Collections.singletonMap("businessKey",
+		// exceptionId);
+
 		Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("businessKey", exceptionId);
-        Map<String, Object> variablesMap = new HashMap<>();
-        Map<String, Object> exceptionTypeMap = new HashMap<>();    
-        exceptionTypeMap.put("value", exceptionType);
-        exceptionTypeMap.put("type", "String");
-        variablesMap.put("ExceptionType", exceptionTypeMap);
-        requestMap.put("variables", variablesMap);
-        // Log the JSON request data
-        System.out.println("JSON Request: " + requestMap);			
-		
-    	ObjectMapper objectMapper = new ObjectMapper();		
+		requestMap.put("businessKey", exceptionId);
+		Map<String, Object> variablesMap = new HashMap<>();
+		Map<String, Object> exceptionTypeMap = new HashMap<>();
+		exceptionTypeMap.put("value", exceptionType);
+		exceptionTypeMap.put("type", "String");
+		variablesMap.put("ExceptionType", exceptionTypeMap);
+		requestMap.put("variables", variablesMap);
+		// Log the JSON request data
+		System.out.println("JSON Request: " + requestMap);
+
+		ObjectMapper objectMapper = new ObjectMapper();
 		String exceptionIdJson = null;
 		try {
 			exceptionIdJson = objectMapper.writeValueAsString(requestMap);
@@ -238,11 +239,11 @@ public class ExceptionManagementService {
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonNode jsonResponse;
 		try {
-		    jsonResponse = objectMapper.readTree(responseBody);
+			jsonResponse = objectMapper.readTree(responseBody);
 		} catch (Exception e) {
-		    // Handle JSON parsing exception
-		    e.printStackTrace();
-		    return null;
+			// Handle JSON parsing exception
+			e.printStackTrace();
+			return null;
 		}
 
 		String processId = jsonResponse.get("id").asText();
@@ -278,8 +279,15 @@ public class ExceptionManagementService {
 //	}
 
 	public TemaMongoEntity getExceptionDetails(String exceptionId) {
-		System.out.println("inside serive " + exceptionId);
-		TemaMongoEntity exception = temaMongoRepository.findById(exceptionId).get();
+		System.out.println("inside service " + exceptionId);
+		Optional<TemaMongoEntity> exceptionOptional = temaMongoRepository.findById(exceptionId);
+
+		TemaMongoEntity exception = null;
+
+		if (exceptionOptional.isPresent()) {
+			exception = exceptionOptional.get();
+		}
+
 		System.out.println(exception);
 		updateExceptionStatus(exception);
 		return exception;
@@ -294,11 +302,14 @@ public class ExceptionManagementService {
 	}
 
 	public void updateExceptionStatus(TemaMongoEntity exception) {
-		String businessId = exception.getProcessId();
-		Map<String, String> mapBusinessId = Collections.singletonMap("businessId", businessId);
-		String businessIdJson = mapToJson(mapBusinessId);
-		String externalApiUrl = "https://example.com/api/products";
-		ResponseEntity<String> response = postJsonToExternalApi(externalApiUrl, businessIdJson);
+		String processId = exception.getProcessId();
+		String externalApiUrl = "http://10.196.20.65:8080/engine-rest/history/activity-instance?processInstanceId="
+				+ processId + "&sortBy=startTime&sortOrder=desc";
+		ResponseEntity<String> response = restTemplate.getForEntity(externalApiUrl, String.class);
+//		Map<String, String> mapProcessId = Collections.singletonMap("processId", processId);
+//		String ProcessIdJson = mapToJson(mapProcessId);
+//		String externalApiUrl = "https://example.com/api/products";
+//		ResponseEntity<String> response = postJsonToExternalApi(externalApiUrl, ProcessIdJson);
 		String status = getExceptionStatus(response);
 		exception.setStatus(status);
 		temaMongoRepository.save(exception);
@@ -308,22 +319,46 @@ public class ExceptionManagementService {
 		String status = "Open";
 		try {
 			String responseBody = response.getBody();
+//			if (responseBody != null) {
+//				System.out.println(responseBody);
+//				ObjectMapper objectMapper = new ObjectMapper();
+//				JsonNode rootNode = objectMapper.readTree(responseBody);
+//				
+//				JsonNode assigneeNode = rootNode.get("assignee");
+//				JsonNode activityNameNode = rootNode.get("activityName");
+//				String activity = activityNameNode.asText();
+//
+//				if (assigneeNode != null) {
+//					if (activity == "4-Eye check")
+//						status = "Resolved";
+//					else if (activity == "Complete")
+//						status = "Closed";
+//					else
+//						status = "Pending";
+//				}
+//			}
+
 			if (responseBody != null) {
 				ObjectMapper objectMapper = new ObjectMapper();
-				JsonNode rootNode = objectMapper.readTree(responseBody);
-				JsonNode assigneeNode = rootNode.get("assignee");
-				JsonNode activityNameNode = rootNode.get("activity_name");
-				String activity = activityNameNode.asText();
+				JsonNode jsonArray = objectMapper.readTree(responseBody);
 
-				if (assigneeNode != null) {
-					if (activity == "FourEyeCheck")
-						status = "Resolved";
-					else if (activity == "Complete")
-						status = "Closed";
-					else
-						status = "Pending";
+				if (jsonArray.isArray() && jsonArray.size() > 0) {
+					JsonNode firstObject = jsonArray.get(0);
+					JsonNode activityNameNode = firstObject.get("activityName");
+					JsonNode assigneeNode = firstObject.get("assignee");
+					String activity = activityNameNode.asText();
+
+					if (assigneeNode != null) {
+						if (activity == "4-Eye check")
+							status = "Resolved";
+						else if (activity == "Complete")
+							status = "Closed";
+						else
+							status = "Pending";
+					}
 				}
 			}
+
 		} catch (Exception e) {
 			System.out.println("inside getStatus of service");
 			e.printStackTrace();
