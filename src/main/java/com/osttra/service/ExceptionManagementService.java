@@ -1,6 +1,6 @@
 package com.osttra.service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.osttra.entity.SourceMongoEntity;
@@ -218,7 +217,7 @@ public class ExceptionManagementService {
 			e.printStackTrace();
 		}
 
-		String externalApiUrl = "http://10.196.20.65:8080/engine-rest/process-definition/key/ApprovalProcess/start";
+		String externalApiUrl = "http://192.168.18.20:8080/engine-rest/process-definition/key/ApprovalProcess/start";
 //		HttpHeaders headers = new HttpHeaders();
 //		headers.setContentType(MediaType.APPLICATION_JSON);
 //		HttpEntity<String> requestEntity = new HttpEntity<>(exceptionIdJson, headers);
@@ -303,7 +302,7 @@ public class ExceptionManagementService {
 
 	public void updateExceptionStatus(TemaMongoEntity exception) {
 		String processId = exception.getProcessId();
-		String externalApiUrl = "http://10.196.20.65:8080/engine-rest/history/activity-instance?processInstanceId="
+		String externalApiUrl = "http://192.168.18.20:8080/engine-rest/history/activity-instance?processInstanceId="
 				+ processId + "&sortBy=startTime&sortOrder=desc";
 		ResponseEntity<String> response = restTemplate.getForEntity(externalApiUrl, String.class);
 //		Map<String, String> mapProcessId = Collections.singletonMap("processId", processId);
@@ -365,23 +364,75 @@ public class ExceptionManagementService {
 		}
 		return status;
 	}
+	
+	public String getProcessId(String exceptionId) {
+        Optional<TemaMongoEntity> exceptionOptional = temaMongoRepository.findById(exceptionId);
+
+        if (exceptionOptional.isPresent()) {
+            TemaMongoEntity exception = exceptionOptional.get();
+            return exception.getProcessId();
+        } else {
+            // Handle the case where the exception with the given ID is not found
+            // You might want to return a default value or throw an exception here
+            return null; // or throw an exception
+        }
+    }
+
 
 	public List<TemaMongoEntity> getExceptionListForUser(String userId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public TemaMongoEntity getExceptionHistory(String exceptionId) {
+	public List<Map<String, Object>> getExceptionHistory(String exceptionId) {
 		Optional<TemaMongoEntity> exceptionOptional = temaMongoRepository.findById(exceptionId);
 
 		TemaMongoEntity exception = null;
 
 		if (exceptionOptional.isPresent()) {
 			exception = exceptionOptional.get();
+			System.out.println("--------------------------history----------------------");
+			System.out.println(exception);
 		}
 		String processId = exception.getProcessId();
+		String externalApiUrl = "http://192.168.18.20:8080/engine-rest/history/activity-instance?processInstanceId="
+				+ processId + "&sortBy=startTime&sortOrder=desc";
+		ResponseEntity<String> response = restTemplate.getForEntity(externalApiUrl, String.class);
+		String responseBody = response.getBody();
+		
+		 ObjectMapper objectMapper = new ObjectMapper();
+		 List<Map<String, Object>> historyList = new ArrayList<>();
+		 
+         try {
+			JsonNode jsonArray = objectMapper.readTree(responseBody);
+			System.out.println(jsonArray);
+		
+	            if (jsonArray.isArray()) {
+	            	System.out.println(" ---------------its working------------------");
+	                for (JsonNode jsonObject : jsonArray) {
+	                	System.out.println(" ---------------its working------------------");
+	                    // Extract the required attributes
+	                    String taskName = jsonObject.get("activityName").asText();
+	                    System.out.println(taskName);
+	                    String user = jsonObject.get("assignee").asText();
+	                    String startTime = jsonObject.get("startTime").asText();
+	                    String endTime = jsonObject.get("endTime").asText();
+	                    // Create a map for the extracted object
+	                    Map<String, Object> extractedObject = new HashMap<>();
+	                    extractedObject.put("taskName", taskName);
+	                    extractedObject.put("user", user);
+	                    extractedObject.put("startTime", startTime);
+	                    extractedObject.put("endTime", endTime);
 
-		return null;
+	                    historyList.add(extractedObject);
+	                }
+	            }
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}	
+       return historyList;  
+				
 	}
 
 }

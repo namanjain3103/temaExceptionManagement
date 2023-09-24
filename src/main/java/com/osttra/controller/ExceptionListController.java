@@ -30,7 +30,7 @@ public class ExceptionListController {
 	RestTemplate restTemplate;
 
 	
-	@GetMapping("/getAllException")
+	@GetMapping("/getAllExceptions")
 	public ResponseEntity<?> getAllExceptionList() {
 		try {
 			List<TemaMongoEntity> mongoData = exceptionManagementService.showAllException();
@@ -92,10 +92,10 @@ public class ExceptionListController {
 	public ResponseEntity<?> assignUserGroup(@RequestBody Map<String, String> assignGroup) {
 		try {
 			
-			String exceptionId = assignGroup.get("exceptionId");
+			String processId = exceptionManagementService.getProcessId(assignGroup.get("exceptionId"));
 			assignGroup.put("type", "candidate");
 			assignGroup.remove("exceptionId");
-			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/identity-links";
+			String externalApiUrl = "http://192.168.18.20:8080/engine-rest/task/" + processId + "/identity-links";
 			//String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
 			String assignGroupJson = exceptionManagementService.mapToJson(assignGroup);
 			System.out.println("in assignGroup Controller");
@@ -128,8 +128,9 @@ public class ExceptionListController {
 	public ResponseEntity<?> assignUser(@RequestBody Map<String, String> assignUser) {
 		try {
 			// String externalApiUrl = "https://jsonplaceholder.typicode.com/posts";
-			String exceptionId = assignUser.get("exceptionId");
-			String externalApiUrl = "http://10.196.20.65:8080/engine-rest/task/" + exceptionId + "/claim";
+			String processId = exceptionManagementService.getProcessId(assignUser.get("exceptionId"));
+			assignUser.remove("exceptionId");
+			String externalApiUrl = "http://192.168.18.20:8080/engine-rest/task/" + processId + "/claim";
 			String assignUserJson = exceptionManagementService.mapToJson(assignUser);
 			System.out.println("in userGroup Controller");
 
@@ -201,16 +202,16 @@ public class ExceptionListController {
         }
     }
      
-    @GetMapping("/get/{exceptionId}")
+    @GetMapping("/getHistory/{exceptionId}")
     public ResponseEntity<?> getExceptionHistory(@PathVariable String exceptionId) {
         try {
         	System.out.println(" inside get exception details"+ exceptionId);
-            TemaMongoEntity exceptionHistory = exceptionManagementService.getExceptionHistory(exceptionId);
-            if (exceptionHistory != null) {
-                return ResponseEntity.ok(exceptionHistory);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+        	List<Map<String, Object>> exceptionHistory = exceptionManagementService.getExceptionHistory(exceptionId);
+        	if (exceptionHistory.size() > 0) {
+				return new ResponseEntity<List<Map<String, Object>>>(exceptionHistory, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>("Data not available", HttpStatus.NOT_FOUND);
+			}
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
