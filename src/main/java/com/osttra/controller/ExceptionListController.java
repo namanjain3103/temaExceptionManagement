@@ -2,7 +2,6 @@ package com.osttra.controller;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +17,6 @@ import org.springframework.web.client.RestTemplate;
 import com.osttra.entity.TemaMongoEntity;
 import com.osttra.service.ExceptionManagementService;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 @RestController
 @CrossOrigin
@@ -161,8 +157,6 @@ public class ExceptionListController {
 		}
 	}
 	
-
-
 //    public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
 //        try {
 //            Optional<TemaMongoEntity> exceptionDetails = exceptionManagementService.getExceptionDetails(exceptionId);
@@ -176,6 +170,7 @@ public class ExceptionListController {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 //        }
 //    }
+	
     @GetMapping("/get/{exceptionId}")
     public ResponseEntity<?> getExceptionDetail(@PathVariable String exceptionId) {
         try {
@@ -190,8 +185,37 @@ public class ExceptionListController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
-
+    
+    @GetMapping("/getException/{userId}")
+    public ResponseEntity<?> getExceptionForUser(@PathVariable String userId) {
+        try {
+        	System.out.println(" inside get exception details"+ userId);
+            List<TemaMongoEntity> exceptionList = exceptionManagementService.getExceptionListForUser(userId);
+            if (exceptionList != null) {
+                return ResponseEntity.ok(exceptionList);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+     
+    @GetMapping("/get/{exceptionId}")
+    public ResponseEntity<?> getExceptionHistory(@PathVariable String exceptionId) {
+        try {
+        	System.out.println(" inside get exception details"+ exceptionId);
+            TemaMongoEntity exceptionHistory = exceptionManagementService.getExceptionHistory(exceptionId);
+            if (exceptionHistory != null) {
+                return ResponseEntity.ok(exceptionHistory);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    } 
+  
 
 }
 

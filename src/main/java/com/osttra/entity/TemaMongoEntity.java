@@ -34,5 +34,4 @@ public class TemaMongoEntity {
 	    private String updatedAt;
 	    private String assign = "ASSIGN";
 	    private String processId;
-	
 }

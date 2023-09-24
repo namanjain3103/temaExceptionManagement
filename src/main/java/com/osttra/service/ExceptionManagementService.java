@@ -366,4 +366,22 @@ public class ExceptionManagementService {
 		return status;
 	}
 
+	public List<TemaMongoEntity> getExceptionListForUser(String userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public TemaMongoEntity getExceptionHistory(String exceptionId) {
+		Optional<TemaMongoEntity> exceptionOptional = temaMongoRepository.findById(exceptionId);
+
+		TemaMongoEntity exception = null;
+
+		if (exceptionOptional.isPresent()) {
+			exception = exceptionOptional.get();
+		}
+		String processId = exception.getProcessId();
+
+		return null;
+	}
+
 }
